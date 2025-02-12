@@ -1,0 +1,14 @@
+{
+  "name": "content-diary-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "latest",
+    "mongoose": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "axios": "latest"
+  }
+}
