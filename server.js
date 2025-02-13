@@ -1,26 +1,22 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const morgan = require('morgan');
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB Connected'))
-.catch(err => {
-  console.error('MongoDB Connection Error:', err);
-  process.exit(1);
-});
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => {
+    console.error('MongoDB Connection Error:', err);
+    process.exit(1);
+  });
 
 // Movie Schema
 const movieSchema = new mongoose.Schema({
@@ -34,8 +30,8 @@ const movieSchema = new mongoose.Schema({
 const Movie = mongoose.model('Movie', movieSchema);
 
 // Routes
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get('/', (req, res) => {
+  res.json({ message: 'Movie Diary API is running' });
 });
 
 // Get all watched movies
@@ -45,7 +41,7 @@ app.get('/api/movies', async (req, res) => {
     res.json(movies);
   } catch (error) {
     console.error('Error fetching movies:', error);
-    res.status(500).json({ message: 'Error fetching movies', error: error.message });
+    res.status(500).json({ message: 'Error fetching movies' });
   }
 });
 
@@ -62,24 +58,22 @@ app.post('/api/movies', async (req, res) => {
     res.status(201).json(movie);
   } catch (error) {
     console.error('Error adding movie:', error);
-    res.status(500).json({ message: 'Error adding movie', error: error.message });
+    res.status(500).json({ message: 'Error adding movie' });
   }
 });
 
 // Remove a movie from watched list
 app.delete('/api/movies/:id', async (req, res) => {
   try {
-    await Movie.findOneAndDelete({ id: req.params.id });
-    res.status(200).json({ message: 'Movie removed successfully' });
+    const result = await Movie.findOneAndDelete({ id: req.params.id });
+    if (!result) {
+      return res.status(404).json({ message: 'Movie not found' });
+    }
+    res.json({ message: 'Movie removed successfully' });
   } catch (error) {
     console.error('Error removing movie:', error);
-    res.status(500).json({ message: 'Error removing movie', error: error.message });
+    res.status(500).json({ message: 'Error removing movie' });
   }
-});
-
-// Handle 404
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
 });
 
 const PORT = process.env.PORT || 3000;
